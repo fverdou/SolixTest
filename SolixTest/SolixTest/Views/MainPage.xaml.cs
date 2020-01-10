@@ -17,20 +17,40 @@ namespace SolixTest.Views
     public partial class MainPage : ContentPage
     {
         SKBitmap bitmap;
-        public List<InspectionPoint> InspectionPoints { get; set; } = new List<InspectionPoint>
+        //public List<InspectionPoint> InspectionPoints { get; set; } = new List<InspectionPoint>
+        //{
+        //    new InspectionPoint(0.1f, 0.1f, "xxxx-001"),
+        //    new InspectionPoint(0.2f, 0.1f, "xxxx-002"),
+        //    new InspectionPoint(0.1f, 0.2f, "xxxx-003"),
+        //    new InspectionPoint(0.2f, 0.2f, "xxxx-004"),
+        //};
+        List<InspectionPoint> InspectionPoints = new List<InspectionPoint>();
+        private void PopulatePointsList()
         {
-            new InspectionPoint(0.1f, 0.1f, "xxxx-001"),
-            new InspectionPoint(0.2f, 0.1f, "xxxx-002"),
-            new InspectionPoint(0.1f, 0.2f, "xxxx-003"),
-            new InspectionPoint(0.2f, 0.2f, "xxxx-004"),
-        };
+            Random rnd = new Random();
+            for (int i = 0; i < 1000; i++)
+            {
+                InspectionPoint p = new InspectionPoint(0.0f, 0.0f, "1");
+                p.x = (float)rnd.NextDouble();
+                p.y = (float)rnd.NextDouble();
+                p.code = i.ToString();
+                InspectionPoints.Add(p);
+            }
+        }
 
-        SKPaint paint = new SKPaint
+        SKPaint booletPaint = new SKPaint
         {
             IsAntialias = true,
             Style = SKPaintStyle.StrokeAndFill,
             Color = Color.Black.ToSKColor(),
             StrokeWidth = 5
+        };
+        SKPaint circlePaint = new SKPaint
+        {
+            IsAntialias = true,
+            Style = SKPaintStyle.Stroke,
+            Color = Color.Black.ToSKColor(),
+            StrokeWidth = 2
         };
         SKPaint thinLinePaint = new SKPaint
         {
@@ -49,6 +69,8 @@ namespace SolixTest.Views
         public MainPage()
         {
             InitializeComponent();
+
+            PopulatePointsList();
 
             string resourceID = "SolixTest.Resources.image.png";
             Assembly assembly = GetType().GetTypeInfo().Assembly;
@@ -87,12 +109,15 @@ namespace SolixTest.Views
                 float lineEndY = _y - 50;
                 float textStartX = lineEndX + 40;
                 float textStartY = lineEndY - 10;
-                canvas.DrawCircle(_x, _y, 5, paint);
+                canvas.DrawCircle(_x, _y, 5, booletPaint);
+                canvas.DrawCircle(_x, _y, 20, circlePaint);
                 canvas.DrawLine(_x, _y, lineEndX, lineEndY, thinLinePaint);
                 canvas.DrawLine(lineEndX, lineEndY, lineEndX + 30, lineEndY, thinLinePaint);
                 canvas.DrawText(element.code, textStartX, textStartY, textPaint);
                 canvas.DrawRect(lineEndX + 30, lineEndY - rectangleHeight, rectangleWidth, rectangleHeight, thinLinePaint);
+
             }
+            canvas.DrawText($"{scaleX}, {scaleY}, {matrix.TransX}, {matrix.TransY}", 100, 100, textPaint);
 
         }
 
@@ -101,6 +126,8 @@ namespace SolixTest.Views
         SKMatrix matrix = SKMatrix.MakeIdentity();
 
         Dictionary<long, SKPoint> touchDictionary = new Dictionary<long, SKPoint>();
+        float scaleX;
+        float scaleY;
 
         void OnTouchEffectAction(object sender, TouchActionEventArgs args)
         {
@@ -127,6 +154,7 @@ namespace SolixTest.Views
                     {
                         touchDictionary.Add(args.Id, point);
                     }
+
                     break;
 
                 case TouchActionType.Moved:
@@ -142,6 +170,11 @@ namespace SolixTest.Views
                             SKPoint prevPoint = touchDictionary[args.Id];
                             matrix.TransX += point.X - prevPoint.X;
                             matrix.TransY += point.Y - prevPoint.Y;
+                            // Move within canvas limits
+                            //if (matrix.TransX > 0) matrix.TransX = 0;
+                            //if (matrix.TransX < - bitmap.Width + (int)canvasView.CanvasSize.Width) matrix.TransX = - bitmap.Width + (int)canvasView.CanvasSize.Width;
+                            //if (matrix.TransY > 0) matrix.TransY = 0;
+                            //if (matrix.TransY < -bitmap.Height + (int)canvasView.CanvasSize.Height) matrix.TransY = -bitmap.Height + (int)canvasView.CanvasSize.Height;
                             canvasView.InvalidateSurface();
                         }
                         else if (touchDictionary.Count >= 2)
@@ -163,8 +196,8 @@ namespace SolixTest.Views
                             SKPoint newVector = newPoint - pivotPoint;
 
                             // Scaling factors are ratios of those
-                            float scaleX = newVector.X / oldVector.X;
-                            //float scaleY = newVector.Y / oldVector.Y;
+                            scaleX = newVector.X / oldVector.X;
+                            scaleY = newVector.Y / oldVector.Y;
 
                             //if (!float.IsNaN(scaleX) && !float.IsInfinity(scaleX) &&
                             //    !float.IsNaN(scaleY) && !float.IsInfinity(scaleY))
