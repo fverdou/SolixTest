@@ -164,14 +164,15 @@ namespace SolixTest.Views
 
                             // Scaling factors are ratios of those
                             float scaleX = newVector.X / oldVector.X;
-                            float scaleY = newVector.Y / oldVector.Y;
+                            //float scaleY = newVector.Y / oldVector.Y;
 
-                            if (!float.IsNaN(scaleX) && !float.IsInfinity(scaleX) &&
-                                !float.IsNaN(scaleY) && !float.IsInfinity(scaleY))
-                            {
+                            //if (!float.IsNaN(scaleX) && !float.IsInfinity(scaleX) &&
+                            //    !float.IsNaN(scaleY) && !float.IsInfinity(scaleY))
+                            if (!float.IsNaN(scaleX) && !float.IsInfinity(scaleX))
+                                {
                                 // If something bad hasn't happened, calculate a scale and translation matrix
                                 SKMatrix scaleMatrix =
-                                    SKMatrix.MakeScale(scaleX, scaleY, pivotPoint.X, pivotPoint.Y);
+                                    SKMatrix.MakeScale(scaleX, scaleX, pivotPoint.X, pivotPoint.Y);
 
                                 SKMatrix.PostConcat(ref matrix, scaleMatrix);
                                 canvasView.InvalidateSurface();
